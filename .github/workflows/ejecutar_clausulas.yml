@@ -2,7 +2,7 @@ name: Biwenger Sniper Bot
 
 on:
   schedule:
-    - cron: '9 16 * * *'  # Se ejecuta a las 17:45 CET
+    - cron: '9 16 * * *'  # Se ejecuta automáticamente a las 17:45 CET (16:09 UTC)
   workflow_dispatch:      # Permite ejecutarlo manualmente desde GitHub
 
 jobs:
@@ -25,9 +25,9 @@ jobs:
 
       - name: Ejecutar script de Biwenger
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
-          LEAGUE_ID: ${{ secrets.LEAGUE_ID }}
-          USER_ID: ${{ secrets.USER_ID }}
+          X_LEAGUE_ID: ${{ secrets.LEAGUE_ID }}
+          X_USER_ID: ${{ secrets.USER_ID }}
         run: python main.py
