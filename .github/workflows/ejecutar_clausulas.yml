@@ -25,9 +25,9 @@ jobs:
 
       - name: Ejecutar script de Biwenger
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
-          X_LEAGUE_ID: ${{ secrets.LEAGUE_ID }}
-          X_USER_ID: ${{ secrets.USER_ID }}
+          X_LEAGUE_ID: ${{ secrets.X_LEAGUE_ID || secrets.LEAGUE_ID }}
+          X_USER_ID: ${{ secrets.X_USER_ID || secrets.USER_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN || secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python main.py
