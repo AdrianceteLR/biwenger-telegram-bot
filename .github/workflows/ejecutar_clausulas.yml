@@ -3,7 +3,7 @@ name: Ejecutar Reporte de Cláusulas Biwenger
 on:
   schedule:
     # Programado para ejecutarse diariamente a las 07:00 UTC (08:00/09:00 Hora España)
-    - cron: '0 7 * * *'
+    - cron: '45 15 * * *'
     
   # Permite lanzar la ejecución manualmente con un botón desde la pestaña Actions en GitHub
   workflow_dispatch:
