@@ -30,4 +30,4 @@ jobs:
           BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
           LEAGUE_ID: ${{ secrets.LEAGUE_ID }}
           USER_ID: ${{ secrets.USER_ID }}
-        run: python main.py
+        run: python test_telegram.py
