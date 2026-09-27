@@ -9,7 +9,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # ==========================================
 # CONFIGURACIÓN E INICIALIZACIÓN
 # ==========================================
-# Lee de las variables de entorno de GitHub Actions o usa los valores por defecto localmente
 BEARER_TOKEN = os.getenv("BEARER_TOKEN")
 X_LEAGUE_ID = os.getenv("X_LEAGUE_ID")
 X_USER_ID = os.getenv("X_USER_ID")
@@ -17,10 +16,25 @@ X_USER_ID = os.getenv("X_USER_ID")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
+# Validar que los secrets críticos estén presentes
+if not all([BEARER_TOKEN, X_LEAGUE_ID, X_USER_ID, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
+    print("❌ ERROR: Falta alguna de las variables de entorno / Secrets en GitHub Actions.")
+    print(f"BEARER_TOKEN cargado: {bool(BEARER_TOKEN)}")
+    print(f"X_LEAGUE_ID cargado: {bool(X_LEAGUE_ID)}")
+    print(f"X_USER_ID cargado: {bool(X_USER_ID)}")
+    print(f"TELEGRAM_BOT_TOKEN cargado: {bool(TELEGRAM_BOT_TOKEN)}")
+    print(f"TELEGRAM_CHAT_ID cargado: {bool(TELEGRAM_CHAT_ID)}")
+    exit(1)
+
+# Limpieza estricta del Bearer Token
+clean_bearer = BEARER_TOKEN.strip()
+if clean_bearer.lower().startswith("bearer "):
+    clean_bearer = clean_bearer[7:].strip()
+
 # Sesión HTTP persistente
 http_session = requests.Session()
 http_session.headers.update({
-    "Authorization": f"Bearer {BEARER_TOKEN.replace('Bearer ', '').strip()}",
+    "Authorization": f"Bearer {clean_bearer}",
     "x-league": str(X_LEAGUE_ID).strip(),
     "x-user": str(X_USER_ID).strip(),
     "x-version": "650",
@@ -62,6 +76,8 @@ def cargar_datos_globales():
             equipos = {int(k): v.get('name', 'Desconocido') for k, v in data.get('teams', {}).items()}
             jugadores = {int(k): v for k, v in data.get('players', {}).items()}
             return equipos, jugadores
+        else:
+            print(f"⚠️ Error cargando datos globales. Status code: {res.status_code}")
     except Exception as e:
         print(f"❌ Error cargando datos globales: {e}")
     return {}, {}
@@ -84,7 +100,7 @@ def obtener_chollos_usuario(u, dict_jugadores, now_ts):
     """Procesa las plantillas de los rivales en paralelo."""
     u_id = u.get('id')
     nombre_rival = u.get('name', 'Usuario')
-    if str(u_id) == X_USER_ID:
+    if str(u_id) == str(X_USER_ID).strip():
         return None
 
     res_user = http_session.get(f"https://biwenger.as.com/api/v2/user/{u_id}?fields=*,players(*,owner)")
@@ -123,7 +139,6 @@ def obtener_chollos_usuario(u, dict_jugadores, now_ts):
 
         if disponible_hoy and clause_price > 0 and not is_modified:
             if sobreprecio_pct <= 0.20 and (incremento >= 0 or media_puntos >= 3.5):
-                # Formato HORA:MINUTO:SEGUNDO
                 hora_str = datetime.fromtimestamp(until_date).strftime("%H:%M:%S") if until_date > now_ts else "ABIERTO 🔓"
                 chollos.append((
                     nombre_j, 
@@ -146,7 +161,8 @@ def generar_reporte_clausulas():
     res = http_session.get(url_league)
     
     if res.status_code != 200:
-        return "❌ Error al obtener los datos de la liga."
+        print(f"❌ Error API Biwenger (Status {res.status_code}): {res.text}")
+        return f"❌ Error al obtener los datos de la liga de Biwenger (Status: {res.status_code}). Revisa el BEARER_TOKEN o LEAGUE_ID."
 
     users_list = res.json().get('data', {}).get('users', [])
     lineas = ["🏆 <b>OPORTUNIDADES DE CLÁUSULA</b>\n"]
@@ -197,11 +213,13 @@ def enviar_telegram(mensaje):
         bloque = ""
         for linea in lineas:
             if len(bloque) + len(linea) + 1 > MAX_LEN:
-                requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": bloque, "parse_mode": "HTML"})
+                res = requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": bloque, "parse_mode": "HTML"})
+                print(f"Respuesta envío parcial Telegram: {res.status_code}")
                 bloque = ""
             bloque += linea + "\n"
         if bloque:
-            requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": bloque, "parse_mode": "HTML"})
+            res = requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": bloque, "parse_mode": "HTML"})
+            print(f"Respuesta envío final Telegram: {res.status_code}")
     else:
         payload = {
             "chat_id": TELEGRAM_CHAT_ID,
@@ -209,6 +227,7 @@ def enviar_telegram(mensaje):
             "parse_mode": "HTML"
         }
         res = requests.post(url, json=payload)
+        print(f"Respuesta envío Telegram: {res.status_code}")
         if res.status_code != 200:
             print(f"❌ Error al enviar mensaje a Telegram: {res.text}")
 
@@ -218,7 +237,7 @@ def main():
     
     print("🚀 Enviando reporte a Telegram...")
     enviar_telegram(reporte)
-    print("✅ ¡Proceso completado con éxito! Finalizando script.")
+    print("✅ ¡Proceso completado! Revisa la respuesta en la consola y Telegram.")
 
 if __name__ == "__main__":
     main()
