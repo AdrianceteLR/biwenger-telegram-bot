@@ -10,12 +10,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # CONFIGURACIÓN E INICIALIZACIÓN
 # ==========================================
 # Lee de las variables de entorno de GitHub Actions o usa los valores por defecto localmente
-BEARER_TOKEN = os.getenv("BEARER_TOKEN", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOjI4NzEyNTkwLCJpYXQiOjE3ODk2MzE2MDB9.Cq88teHka0Q7zcsoX_x_hRLXAtUG8AMtoxKBYvgsL6E")
-X_LEAGUE_ID = os.getenv("X_LEAGUE_ID", "2148505")
-X_USER_ID = os.getenv("X_USER_ID", "14006706")
+BEARER_TOKEN = os.getenv("BEARER_TOKEN")
+X_LEAGUE_ID = os.getenv("X_LEAGUE_ID")
+X_USER_ID = os.getenv("X_USER_ID")
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8825840797:AAEZ-O3KUH8duOm5JRsRwl5NZjgl_qAOH40")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "727756988")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # Sesión HTTP persistente
 http_session = requests.Session()
