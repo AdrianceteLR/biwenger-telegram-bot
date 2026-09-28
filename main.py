@@ -3,6 +3,7 @@ import time
 import html
 import os
 import requests  # pyright: ignore[reportMissingModuleSource]
+import zoneinfo
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -97,7 +98,7 @@ def calcular_media(p_info):
     return 0.0
 
 def obtener_chollos_usuario(u, dict_jugadores, now_ts):
-    """Procesa las plantillas de los rivales en paralelo."""
+    """Procesa las plantillas de los rivales en paralelo con zona horaria de España."""
     u_id = u.get('id')
     nombre_rival = u.get('name', 'Usuario')
     if str(u_id) == str(X_USER_ID).strip():
@@ -109,6 +110,9 @@ def obtener_chollos_usuario(u, dict_jugadores, now_ts):
 
     players_array = res_user.json().get('data', {}).get('players', [])
     chollos = []
+    
+    # Definimos la zona horaria oficial de España
+    tz_espana = zoneinfo.ZoneInfo("Europe/Madrid")
 
     for p_item in players_array:
         p_id = p_item.get('id')
@@ -139,7 +143,14 @@ def obtener_chollos_usuario(u, dict_jugadores, now_ts):
 
         if disponible_hoy and clause_price > 0 and not is_modified:
             if sobreprecio_pct <= 0.20 and (incremento >= 0 or media_puntos >= 3.5):
-                hora_str = datetime.fromtimestamp(until_date).strftime("%H:%M:%S") if until_date > now_ts else "ABIERTO 🔓"
+                # Conversión a la hora oficial de España con fecha y hora (Ejemplo: Hoy 18:30 o 29/09 08:18)
+                if until_date > now_ts:
+                    dt_esp = datetime.fromtimestamp(until_date, tz=tz_espana)
+                    # Muestra HH:MM:SS si es hoy, o DD/MM HH:MM si vence en días posteriores
+                    hora_str = dt_esp.strftime("%H:%M:%S") if dt_esp.date() == datetime.now(tz_espana).date() else dt_esp.strftime("%d/%m %H:%M")
+                else:
+                    hora_str = "ABIERTO 🔓"
+
                 chollos.append((
                     nombre_j, 
                     POSICIONES_VALIDAS.get(pos_id, "JUG"), 
