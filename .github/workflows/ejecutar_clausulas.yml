@@ -2,7 +2,7 @@ name: Biwenger Sniper Bot
 
 on:
   schedule:
-    - cron: '30 5 * * *'  # 05:30 UTC = 07:30 Hora Peninsular Española (CEST)
+    - cron: '32 5 * * *'  # 05:30 UTC = 07:32 Hora Peninsular Española (CEST)
   workflow_dispatch:      # Permite ejecutarlo manualmente desde GitHub
 
 jobs:
