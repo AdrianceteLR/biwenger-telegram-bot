@@ -147,7 +147,7 @@ def obtener_chollos_usuario(u, dict_jugadores, now_ts):
                 if until_date > now_ts:
                     dt_esp = datetime.fromtimestamp(until_date, tz=tz_espana)
                     # Muestra HH:MM:SS si es hoy, o DD/MM HH:MM si vence en días posteriores
-                    hora_str = dt_esp.strftime("%H:%M:%S") if dt_esp.date() == datetime.now(tz_espana).date() else dt_esp.strftime("%d/%m %H:%M")
+                    hora_str = dt_esp.strftime("%d/%m %H:%M:%S")
                 else:
                     hora_str = "ABIERTO 🔓"
 
